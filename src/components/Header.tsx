@@ -23,6 +23,8 @@ export default function Header() {
   const [exportGameEngine, setExportGameEngine] = useState('gamemaker');
   const exportJsonRef = useRef<HTMLTextAreaElement>(null);
   const fileMenuRef = useRef<HTMLDivElement>(null);
+  const [dimensionsError, setDimensionsError] = useState('');
+  const [chanceError, setChanceError] = useState('');
   
   const { 
     room, 
@@ -118,18 +120,22 @@ export default function Header() {
   };
 
   const applyRoomPropertiesChange = () => {
+    // Reset error states
+    setDimensionsError('');
+    setChanceError('');
+    
     // Validate dimensions
     const width = parseInt(editRoomWidth);
     const height = parseInt(editRoomHeight);
     const chance = parseInt(editRoomChance);
     
     if (isNaN(width) || isNaN(height) || width < 100 || height < 100) {
-      alert('Please enter valid dimensions (minimum 100x100)');
+      setDimensionsError('Please enter valid dimensions (minimum 100x100)');
       return;
     }
 
     if (editRoomChance && (isNaN(chance) || chance < 0 || chance > 100)) {
-      alert('Chance must be a number between 0 and 100');
+      setChanceError('Chance must be a number between 0 and 100');
       return;
     }
     
@@ -551,7 +557,7 @@ export default function Header() {
                     type="number"
                     value={editRoomWidth}
                     onChange={(e) => setEditRoomWidth(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded"
+                    className={`w-full px-3 py-2 border rounded ${dimensionsError ? 'border-red-500' : 'border-gray-300'}`}
                     min="100"
                   />
                 </div>
@@ -561,11 +567,14 @@ export default function Header() {
                     type="number"
                     value={editRoomHeight}
                     onChange={(e) => setEditRoomHeight(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded"
+                    className={`w-full px-3 py-2 border rounded ${dimensionsError ? 'border-red-500' : 'border-gray-300'}`}
                     min="100"
                   />
                 </div>
               </div>
+              {dimensionsError && (
+                <div className="text-red-500 text-sm">{dimensionsError}</div>
+              )}
               
               <div className="mb-4">
                 <label className="block mb-1 font-medium">Room Type:</label>
@@ -574,37 +583,36 @@ export default function Header() {
                   value={editRoomType || ''}
                   onChange={(e) => setEditRoomType(e.target.value || undefined)}
                   className="w-full px-3 py-2 border border-gray-300 rounded"
-                  placeholder="undefined"
+                  placeholder="Optional"
                 />
-                <p className="text-sm text-gray-500 mt-1">Default: undefined</p>
               </div>
               
               <div className="mb-4">
-                <label className="block mb-1 font-medium">Room Biome:</label>
+                <label className="block mb-1 font-medium">Biome:</label>
                 <input
                   type="text"
                   value={editRoomBiome || ''}
                   onChange={(e) => setEditRoomBiome(e.target.value || undefined)}
                   className="w-full px-3 py-2 border border-gray-300 rounded"
-                  placeholder="undefined"
+                  placeholder="Optional"
                 />
-                <p className="text-sm text-gray-500 mt-1">Default: undefined</p>
               </div>
-
+              
               <div className="mb-4">
-                <label className="block mb-1 font-medium">Generation Chance:</label>
+                <label className="block mb-1 font-medium">Chance (0-100):</label>
                 <input
                   type="number"
                   value={editRoomChance}
                   onChange={(e) => setEditRoomChance(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded"
-                  placeholder="0 to 100"
+                  className={`w-full px-3 py-2 border rounded ${chanceError ? 'border-red-500' : 'border-gray-300'}`}
                   min="0"
                   max="100"
-                  step="1"
+                  placeholder="Optional"
                 />
-                <p className="text-sm text-gray-500 mt-1">Probability of room being generated (0 to 100)</p>
               </div>
+              {chanceError && (
+                <div className="text-red-500 text-sm">{chanceError}</div>
+              )}
               
               <p className="text-sm text-gray-500">Note: Changing room size won't affect existing tiles and objects.</p>
             </div>

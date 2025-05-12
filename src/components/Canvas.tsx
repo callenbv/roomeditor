@@ -134,13 +134,17 @@ export default function Canvas() {
     
     const rect = canvasRef.current.getBoundingClientRect();
     
-    // Calculate position in the visible canvas
+    // 1. Convert screen coordinates to canvas-relative coordinates
     const canvasX = x - rect.left;
     const canvasY = y - rect.top;
     
-    // Account for scale and pan offset
-    const roomX = (canvasX / scale) - panOffset.x;
-    const roomY = (canvasY / scale) - panOffset.y;
+    // 2. Apply inverse transformation
+    // The canvas has transform: `translate(${panOffset.x * scale}px, ${panOffset.y * scale}px) scale(${scale})`
+    // To go backwards, we:
+    // a. Divide by scale (undoing the scale)
+    // b. Subtract the scaled pan offset (undoing the translation)
+    const roomX = canvasX / scale ;
+    const roomY = canvasY / scale ;
     
     return { x: roomX, y: roomY };
   };
@@ -278,21 +282,26 @@ export default function Canvas() {
 
   // Update hover position while moving the mouse
   const handleMouseMoveCanvas = (e: MouseEvent) => {
-    const { x, y } = screenToRoom(e.clientX, e.clientY);
-    
     // Handle middle mouse button panning (has priority over other operations)
     if (isMiddleMouseDown) {
-      const dx = (e.clientX - dragStart.x) / scale;
-      const dy = (e.clientY - dragStart.y) / scale;
+      // Calculate the change in position since last drag event
+      const dx = e.clientX - dragStart.x;
+      const dy = e.clientY - dragStart.y;
       
+      // Update pan offset - with the new transform order, we need to divide by scale
+      // because the translation is applied before scaling
       setPanOffset({
-        x: panOffset.x + dx,
-        y: panOffset.y + dy
+        x: panOffset.x + dx / scale,
+        y: panOffset.y + dy / scale
       });
       
+      // Update drag start position for next frame
       setDragStart({ x: e.clientX, y: e.clientY });
       return;
     }
+
+    // Get room coordinates after handling pan
+    const { x, y } = screenToRoom(e.clientX, e.clientY);
     
     // Show preview when using place or erase tool, and a layer is selected
     if ((selectedTool === 'place' || selectedTool === 'erase') && selectedLayer) {
@@ -456,6 +465,9 @@ export default function Canvas() {
       e.preventDefault();
       setIsMiddleMouseDown(true);
       setDragStart({ x: e.clientX, y: e.clientY });
+      if (canvasRef.current) {
+        canvasRef.current.style.cursor = 'grabbing';
+      }
       return;
     }
 
@@ -637,6 +649,9 @@ export default function Canvas() {
     // If it's not a specific button event or it's the middle button, reset middle mouse state
     if (!e || e.button === 1) {
       setIsMiddleMouseDown(false);
+      if (canvasRef.current) {
+        canvasRef.current.style.cursor = 'default';
+      }
     }
     
     setIsDragging(false);
@@ -714,24 +729,28 @@ export default function Canvas() {
     
     const { x, y, width, height } = selectionArea;
     console.log("Looking for tiles in selection area:", x, y, width, height);
-    console.log("Layer tiles:", layer.tiles);
     
     // Mark tiles as selected and return them
     const tilesInSelection = layer.tiles.filter(tile => {
-      const isInSelection = tile.x >= x && 
-        tile.x < x + width && 
+      // Check if the tile's position falls within the selection area
+      // Using proper boundary checking with inclusive left/top edges and exclusive right/bottom edges
+      const isInSelection = 
+        tile.x >= x && 
+        tile.x < (x + width) && 
         tile.y >= y && 
-        tile.y < y + height;
+        tile.y < (y + height);
       
       // Mark the tile as selected
       if (isInSelection) {
         tile.selected = true;
+      } else {
+        tile.selected = false;
       }
       
       return isInSelection;
     });
     
-    console.log("Found tiles in selection:", tilesInSelection);
+    console.log("Found tiles in selection:", tilesInSelection.length);
     return tilesInSelection;
   }, [selectionArea, selectedLayer, room.layers]);
 
@@ -1353,17 +1372,18 @@ export default function Canvas() {
         e.preventDefault();
         const layer = room.layers.find(l => l.name === selectedLayer);
         if (layer && layer.type === 'tile') {
-          // Get tiles in selection area
+          // Get tiles in selection area - this marks tiles as selected
           const tilesInSelection = getTilesInSelection();
           if (tilesInSelection.length > 0) {
-            console.log("Cutting tiles:", tilesInSelection);
+            console.log("Cutting tiles:", tilesInSelection.length);
             
             // Store the previous room state for undo
             const previousRoom = JSON.parse(JSON.stringify(room));
             
-            // Calculate the bounds of the selection
-            const minX = Math.min(...tilesInSelection.map(tile => tile.x));
-            const minY = Math.min(...tilesInSelection.map(tile => tile.y));
+            // Calculate the bounds of the selection - use the actual selection area
+            // instead of calculating from tiles to be more consistent
+            const minX = selectionArea.x;
+            const minY = selectionArea.y;
             
             // Normalize the tiles relative to the selection bounds
             const normalizedTiles = tilesInSelection.map(tile => ({
@@ -1510,12 +1530,12 @@ export default function Canvas() {
         style={{
           width: room.width,
           height: room.height,
-          transform: `scale(${scale}) translate(${panOffset.x}px, ${panOffset.y}px)`,
+          transform: `translate(${panOffset.x * scale}px, ${panOffset.y * scale}px) scale(${scale})`,
           transformOrigin: '0 0',
-          backgroundColor: '#1a1a1a',
+          backgroundColor: '#777777',
           backgroundImage: showGrid ? `
-            linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px)
+            linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
           ` : 'none',
           backgroundSize: `${customTileSize}px ${customTileSize}px`,
           imageRendering: 'pixelated'
@@ -1533,7 +1553,7 @@ export default function Canvas() {
             className="absolute inset-0 pointer-events-none z-10"
             style={{
               backgroundSize: `${customTileSize}px ${customTileSize}px`,
-              backgroundImage: 'linear-gradient(to right, rgba(180, 180, 180, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(180, 180, 180, 0.1) 1px, transparent 1px)',
+              backgroundImage: 'linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px)',
               backgroundPosition: '0 0'
             }}
           />

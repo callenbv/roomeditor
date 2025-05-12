@@ -188,6 +188,7 @@ const defaultObjectDefinitions: ObjectDefinition[] = [
   { name: 'oMerchant', width: 16, height: 15, color: '#0070a0' },
   { name: 'oTree', width: 16, height: 16, color: '#84cc16' },
   { name: 'oRandomResource', width: 16, height: 16, color: '#a8cc16' },
+  { name: 'oGaiaStatue', width: 16, height: 16, color: '#a8cc16' },
 ];
 
 const RoomContext = createContext<RoomContextType | null>(null);
@@ -298,11 +299,11 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
       setRecentRooms(updatedRecent);
       localStorage.setItem('recentRooms', JSON.stringify(updatedRecent));
       
-      // Show feedback to user
+      // Show success alert
       alert(`Room "${room.name}" saved successfully!`);
     } catch (error) {
       console.error('Error saving room:', error);
-      alert(`Failed to save room "${room.name}". ${error}`);
+      alert(`Error saving room: ${error}`);
     }
   };
 
@@ -1546,30 +1547,6 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         } else if (e.key === 'y' || (e.shiftKey && e.key === 'z')) {
           e.preventDefault();
           redo();
-        } else if (e.key === 'x' && selectedLayer) {
-          e.preventDefault();
-          // Get the layer
-          const layer = room.layers.find(l => l.name === selectedLayer);
-          if (!layer || layer.type !== 'tile') return;
-
-          // Get selected tiles
-          const selectedTiles = layer.tiles.filter(tile => tile.selected);
-          if (selectedTiles.length === 0) return;
-
-          // Copy to brush
-          copyTilesToBrush(
-            selectedTiles,
-            room.width,
-            room.height,
-            layer.texture || 'default',
-            0,
-            0
-          );
-
-          // Delete selected tiles
-          selectedTiles.forEach(tile => {
-            removeTile(selectedLayer, tile.x, tile.y);
-          });
         }
       }
     };
@@ -1578,7 +1555,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [undo, redo, room, selectedLayer, copyTilesToBrush, removeTile]);
+  }, [undo, redo]);
 
   // Add event listener for prefab placement
   useEffect(() => {
