@@ -1,8 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #1e1e2e;
+  --foreground: #cdd6f4;
+  --accent: #89b4fa;
+  --secondary: #313244;
+  --border: #45475a;
+  --destructive: #f38ba8;
+  --text-primary: #cdd6f4;
+  --text-secondary: #a6adc8;
+  --button-primary: #89b4fa;
+  --button-primary-hover: #74c7ec;
+  --button-destructive: #f38ba8;
+  --button-destructive-hover: #eb6f92;
+  --panel-bg: #181825;
+  --panel-border: #313244;
+  --input-bg: #313244;
+  --input-border: #45475a;
+  --input-text: #cdd6f4;
+  --grid-lines: #45475a;
 }
 
 @theme inline {
@@ -20,7 +36,113 @@
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Dark theme for inputs and textareas */
+input, textarea, select {
+  color: var(--input-text);
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+}
+
+/* Make placeholder text visible on dark backgrounds */
+::placeholder {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+
+/* Dark theme for containers */
+.bg-white {
+  background-color: var(--panel-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+.bg-gray-100, .bg-gray-200, .bg-gray-300 {
+  background-color: var(--panel-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+.border-gray-300, .border-gray-200 {
+  border-color: var(--panel-border) !important;
+}
+
+.text-gray-300, .text-gray-400, .text-gray-500, .text-gray-600, .text-gray-700, .text-gray-800 {
+  color: var(--text-secondary) !important;
+}
+
+.text-gray-900 {
+  color: var(--text-primary) !important;
+}
+
+/* Dark theme for buttons */
+.bg-blue-500, .bg-blue-600, .bg-blue-700 {
+  background-color: var(--button-primary) !important;
+  color: #000000 !important;
+}
+
+.hover\:bg-blue-600:hover, .hover\:bg-blue-700:hover {
+  background-color: var(--button-primary-hover) !important;
+}
+
+.bg-red-500, .bg-red-600, .bg-red-700, .text-red-500, .text-red-600, .text-red-700 {
+  background-color: var(--button-destructive) !important;
+  color: #000000 !important;
+}
+
+.hover\:bg-red-600:hover, .hover\:bg-red-700:hover, .hover\:text-red-700:hover {
+  background-color: var(--button-destructive-hover) !important;
+}
+
+/* Fix sidebar text */
+.sidebar-text {
+  color: var(--text-primary) !important;
+}
+
+/* Fix background on toolbar */
+.bg-gray-800 {
+  background-color: var(--secondary) !important;
+}
+
+/* Room canvas */
+.bg-gray-100.overflow-hidden {
+  background-color: var(--panel-bg) !important;
+}
+
+/* Canvas grid background */
+[style*="background-image: linear-gradient"] {
+  background-image: linear-gradient(to right, var(--grid-lines) 1px, transparent 1px), 
+                   linear-gradient(to bottom, var(--grid-lines) 1px, transparent 1px) !important;
+}
+
+/* Canvas background */
+[style*="background-color: white"] {
+  background-color: var(--secondary) !important;
+}
+
+/* Fix hover states */
+.hover\:bg-gray-100:hover {
+  background-color: var(--secondary) !important;
+}
+
+.hover\:bg-gray-200:hover {
+  background-color: var(--secondary) !important;
+}
+
+.hover\:text-white:hover {
+  color: var(--text-primary) !important;
+}
+
+/* Fix dialogs */
+.bg-white.text-gray-800 {
+  background-color: var(--panel-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Make sure code editor content is visible */
+.font-mono {
+  background-color: var(--secondary);
+  color: var(--text-primary);
 }
