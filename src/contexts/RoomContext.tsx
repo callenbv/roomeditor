@@ -87,6 +87,7 @@ interface RoomContextType {
   updateRoomSize: (width: number, height: number) => void;
   updateRoomType: (type: string | undefined) => void;
   updateRoomBiome: (biome: string | undefined) => void;
+  updateRoomChance: (chance: number | undefined) => void;
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
@@ -140,7 +141,8 @@ const defaultRoom: Room = {
   name: 'New Room',
   index: '@ref room(New Room)',
   type: undefined,
-  biome: undefined
+  biome: undefined,
+  chance: 100
 };
 
 // Helper function to create a new room with default layers
@@ -169,7 +171,8 @@ const createNewRoom = (name: string = 'New Room'): Room => {
     name: name,
     index: `@ref room(${name})`,
     type: undefined,
-    biome: undefined
+    biome: undefined,
+    chance: 100
   };
 };
 
@@ -875,6 +878,13 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
       description: `Updated room biome to "${biome || 'undefined'}"`
     }, `Updated room biome to "${biome || 'undefined'}"`);
   };
+
+  const updateRoomChance = useCallback((chance: number | undefined) => {
+    setRoom(prevRoom => ({
+      ...prevRoom,
+      chance
+    }));
+  }, []);
 
   // Validates if an object can be placed on the selected layer
   const canPlaceObjectOnLayer = useCallback((layerName: string): boolean => {
@@ -1725,6 +1735,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         updateRoomSize,
         updateRoomType,
         updateRoomBiome,
+        updateRoomChance,
         undo,
         redo,
         canUndo,

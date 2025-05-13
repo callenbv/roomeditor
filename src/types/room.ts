@@ -39,6 +39,8 @@ export interface Room {
   index: string;
   type?: string;
   biome?: string;
+  chance?: number;
+  objectDefinitions?: ObjectDefinition[];
 }
 
 export interface ObjectDefinition {

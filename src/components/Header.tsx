@@ -17,6 +17,7 @@ export default function Header() {
   const [editRoomHeight, setEditRoomHeight] = useState('');
   const [editRoomType, setEditRoomType] = useState<string | undefined>(undefined);
   const [editRoomBiome, setEditRoomBiome] = useState<string | undefined>(undefined);
+  const [editRoomChance, setEditRoomChance] = useState<string>('');
   const [exportFileName, setExportFileName] = useState('');
   const [exportFormat, setExportFormat] = useState('json');
   const [exportGameEngine, setExportGameEngine] = useState('gamemaker');
@@ -32,6 +33,7 @@ export default function Header() {
     updateRoomSize,
     updateRoomType,
     updateRoomBiome,
+    updateRoomChance,
     // Tab-related props
     tabs,
     activeTabId,
@@ -111,6 +113,7 @@ export default function Header() {
     setEditRoomHeight(room.height.toString());
     setEditRoomType(room.type);
     setEditRoomBiome(room.biome);
+    setEditRoomChance(room.chance?.toString() || '');
     setIsRoomPropertiesDialogOpen(true);
   };
 
@@ -118,9 +121,15 @@ export default function Header() {
     // Validate dimensions
     const width = parseInt(editRoomWidth);
     const height = parseInt(editRoomHeight);
+    const chance = parseInt(editRoomChance);
     
     if (isNaN(width) || isNaN(height) || width < 100 || height < 100) {
       alert('Please enter valid dimensions (minimum 100x100)');
+      return;
+    }
+
+    if (editRoomChance && (isNaN(chance) || chance < 0 || chance > 100)) {
+      alert('Chance must be a number between 0 and 100');
       return;
     }
     
@@ -131,7 +140,8 @@ export default function Header() {
       height,
       name: editRoomName.trim() || room.name,
       type: editRoomType,
-      biome: editRoomBiome
+      biome: editRoomBiome,
+      chance: editRoomChance ? chance : undefined
     };
     
     // Update room size first
@@ -148,6 +158,10 @@ export default function Header() {
     
     if (editRoomBiome !== room.biome) {
       updateRoomBiome(editRoomBiome);
+    }
+
+    if (editRoomChance !== (room.chance?.toString() || '')) {
+      updateRoomChance(editRoomChance ? chance : undefined);
     }
     
     // Save the room to persist changes
@@ -250,7 +264,8 @@ export default function Header() {
       name: roomData.name,
       id: roomData.index || `room_${roomData.name.replace(/\s+/g, '_').toLowerCase()}`,
       type: roomData.type,
-      biome: roomData.biome
+      biome: roomData.biome,
+      chance: roomData.chance
     };
     
     return JSON.stringify(unityData, null, 2);
@@ -267,6 +282,7 @@ export default function Header() {
       },
       type: roomData.type,
       biome: roomData.biome,
+      chance: roomData.chance,
       layers: roomData.layers.map((layer: Layer) => ({
         name: layer.name,
         id: `layer_${layer.name.replace(/\s+/g, '_').toLowerCase()}`,
@@ -301,6 +317,7 @@ export default function Header() {
       height: roomData.height,
       type: roomData.type,
       biome: roomData.biome,
+      chance: roomData.chance,
       layers: roomData.layers.map((layer: Layer) => {
         if (layer.type === 'tile') {
           return {
@@ -572,6 +589,21 @@ export default function Header() {
                   placeholder="undefined"
                 />
                 <p className="text-sm text-gray-500 mt-1">Default: undefined</p>
+              </div>
+
+              <div className="mb-4">
+                <label className="block mb-1 font-medium">Generation Chance:</label>
+                <input
+                  type="number"
+                  value={editRoomChance}
+                  onChange={(e) => setEditRoomChance(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded"
+                  placeholder="0 to 100"
+                  min="0"
+                  max="100"
+                  step="1"
+                />
+                <p className="text-sm text-gray-500 mt-1">Probability of room being generated (0 to 100)</p>
               </div>
               
               <p className="text-sm text-gray-500">Note: Changing room size won't affect existing tiles and objects.</p>
