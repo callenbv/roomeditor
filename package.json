@@ -4,7 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:web": "next dev --turbopack",
+    "electron:dev": "cross-env ELECTRON_START_URL=http://localhost:3000 electron .",
+    "dev:app": "concurrently -k \"npm:dev:web\" \"wait-on http://localhost:3000 && npm:electron:dev\"",
     "build": "next build",
+    "build:web": "next build",
+    "package:win": "npm run build:web && electron-builder --win",
     "start": "next start",
     "lint": "next lint"
   },
@@ -22,6 +27,30 @@
     "tailwindcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
-    "@eslint/eslintrc": "^3"
+    "@eslint/eslintrc": "^3",
+    "concurrently": "^9.0.1",
+    "wait-on": "^8.0.2",
+    "electron": "^31.7.5",
+    "electron-builder": "^24.13.3",
+    "cross-env": "^7.0.3"
+  },
+  "main": "electron/main.js",
+  "build": {
+    "appId": "com.roomeditor.app",
+    "productName": "RoomEditor",
+    "files": [
+      "out/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "public"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    }
   }
 }

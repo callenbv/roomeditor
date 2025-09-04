@@ -675,6 +675,33 @@ export default function Header() {
                   />
                 </div>
               </div>
+
+              {/* Preset Rooms */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Presets:</label>
+                <div className="flex space-x-2">
+                  <button
+                    className="px-3 py-2 border border-gray-300 rounded hover:bg-gray-100"
+                    onClick={() => {
+                      setNewRoomName('Normal Room');
+                      setNewRoomWidth('288');
+                      setNewRoomHeight('288');
+                    }}
+                  >
+                    Normal 288×288
+                  </button>
+                  <button
+                    className="px-3 py-2 border border-gray-300 rounded hover:bg-gray-100"
+                    onClick={() => {
+                      setNewRoomName('Long Room');
+                      setNewRoomWidth('400');
+                      setNewRoomHeight('288');
+                    }}
+                  >
+                    Long 400×288
+                  </button>
+                </div>
+              </div>
             </div>
             
             <div className="flex justify-end space-x-2 mt-6">
